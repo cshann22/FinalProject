@@ -76,27 +76,39 @@ app.get("./:id", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         // Extract username and password from request body
-        const { username, password } = req.body;
+        const loginUser = {
+            "userName": req.body.userName,
+            "password": req.body.password
+        };
 
         // Connect to the database
         await client.connect();
+        console.log("Node connected successfully to MongoDB");
 
-        // Find the user by username and password in the 'userInfo' collection
-        const user = await db
-            userCollection
-            .findOne({ userName: username, password: password });
-
+        // Find the user by username in the 'userCollection'
+        const user = await userCollection.findOne({ userName: loginUser.userName });
         if (!user) {
+            // User not found
+            return res.status(401).send({ message: "Invalid username or password" });
+        }
+        console.log(`User found: ${user.userName}`);
+
+        // Check if the provided password matches the password stored in the database
+        if (user.password !== loginUser.password) {
+            // Passwords don't match
             return res.status(401).send({ message: "Invalid username or password" });
         }
 
         // User login successful
-        res.status(200).send({ message: "Login successful", user: user });
+        console.log("User logged in:", user);
+        res.status(201).send({ message: "Login successful", user: user });
     } catch (error) {
         console.error("Error during login:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 });
+
+
 
 
 
@@ -116,7 +128,7 @@ app.post("/createUser", async (req, res) => {
         };
         const result = await userCollection
             .insertOne(newUser);
-        console.log(`User create with id: ${result.nextUser}`);
+        console.log(`User create with id: ${newUser.id}`);
         //Insert empty transaction into 'transactionCollection'
         await transactionCollection.insertOne({
             userId: lastUserId,
@@ -165,7 +177,7 @@ app.put("/updateUser/:id", async (req, res) => {
         }
         if (userName !== null && userName !== undefined) {
             updateUser.$set.userName = userName;
-        }else{
+        } else {
             updateUser.$set.userName = user.UserName
         }
         if (password !== null && password !== undefined) {
@@ -225,7 +237,7 @@ app.get("/listTransactions/:userId", async (req, res) => {
             return res.send("User not found").status(404);
         }
         const userTransactions = await transactionCollection
-        .find({ userId: userId }).toArray();
+            .find({ userId: userId }).toArray();
 
         res.send(userTransactions).status(200);
     }
@@ -253,13 +265,13 @@ app.post("/createTransaction/:userId", async (req, res) => {
 
         // Insert the transaction into 'transactions' collection
         await transactionsCollection
-        .insertOne({
-            userId: userId,
-            amount: amount,
-            description: description,
-            category: category,
-            date: new Date() // You might want to use the actual date from the request
-        });
+            .insertOne({
+                userId: userId,
+                amount: amount,
+                description: description,
+                category: category,
+                date: new Date() // You might want to use the actual date from the request
+            });
 
         res.status(201).send({ message: "Transaction created successfully" });
     } catch (error) {
@@ -363,7 +375,7 @@ app.put("/changeBudget/:userId", async (req, res) => {
         if (utilities !== null && utilities !== undefined) {
             updateBudget.$set.utilities = utilities;
         }
-        if (food !== null && food !== undefined)  {
+        if (food !== null && food !== undefined) {
             updateBudget.$set.food = food;
         }
         if (transportation !== null && transportation !== undefined) {
