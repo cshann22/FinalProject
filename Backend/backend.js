@@ -16,7 +16,7 @@ const userCollection = db.collection("userCollection");
 const transactionCollection = db.collection("transactionCollection");
 const budgetCollection = db.collection("budgetCollection");
 
-var nextUser = 0;
+var lastUserId = 0;
 
 client.connect((err) => {
     if (err) {
@@ -105,27 +105,28 @@ app.post("/createUser", async (req, res) => {
     try {
         await client.connect();
 
+        lastUserId++;
+
         //insert a newUser into 'userCollection'
         const newUser = {
-            "id": nextUser++,
+            "id": lastUserId,
             "name": req.body.name,
             "userName": req.body.userName,
             "password": req.body.password
         };
-        const result = userCollection
+        const result = await userCollection
             .insertOne(newUser);
         console.log(`User create with id: ${result.nextUser}`);
-
         //Insert empty transaction into 'transactionCollection'
         await transactionCollection.insertOne({
-            userId: result.nextUser,
+            userId: lastUserId,
             transactions: []
         });
 
 
         //Insert empty budget into 'budgetCollection'
         await budgetCollection.insertOne({
-            userId: result.nextUser,
+            userId: lastUserId,
             budget: {
                 total: 0,
                 income: 0,
