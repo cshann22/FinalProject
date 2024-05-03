@@ -160,13 +160,15 @@ app.put("/updateUser/:id", async (req, res) => {
         const updateUser = {
             $set: {}
         };
-        if (name !== null) {
+        if (name !== null && name !== undefined) {
             updateUser.$set.name = name;
         }
-        if (userName !== null) {
+        if (userName !== null && userName !== undefined) {
             updateUser.$set.userName = userName;
+        }else{
+            updateUser.$set.userName = user.UserName
         }
-        if (password !== null) {
+        if (password !== null && password !== undefined) {
             updateUser.$set.password = password;
         }
 
@@ -349,31 +351,31 @@ app.put("/changeBudget/:userId", async (req, res) => {
         };
 
         // Add non-null fields to the update document
-        if (total !== null) {
+        if (total !== null && total !== undefined) {
             updateBudget.$set.total = total;
         }
-        if (income !== null) {
+        if (income !== null && income !== undefined) {
             updateBudget.$set.income = income;
         }
-        if (housing !== null) {
+        if (housing !== null && housing !== undefined) {
             updateBudget.$set.housing = housing;
         }
-        if (utilities !== null) {
+        if (utilities !== null && utilities !== undefined) {
             updateBudget.$set.utilities = utilities;
         }
-        if (food !== null) {
+        if (food !== null && food !== undefined)  {
             updateBudget.$set.food = food;
         }
-        if (transportation !== null) {
+        if (transportation !== null && transportation !== undefined) {
             updateBudget.$set.transportation = transportation;
         }
-        if (personal !== null) {
+        if (personal !== null && personal !== undefined) {
             updateBudget.$set.personal = personal;
         }
-        if (savings !== null) {
+        if (savings !== null && savings !== undefined) {
             updateBudget.$set.savings = savings;
         }
-        if (other !== null) {
+        if (other !== null && other !== undefined) {
             updateBudget.$set.other = other;
         }
 
