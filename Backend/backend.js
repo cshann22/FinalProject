@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 var app = express();
 const { MongoClient, ObjectId } = require("mongodb");
 
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -117,6 +118,14 @@ app.post("/createUser", async (req, res) => {
     try {
         await client.connect();
 
+
+        const checkUser = await userCollection
+            .findOne({ userName: req.body.userName });
+        if(checkUser){
+            console.log(`User ${checkUser.userName} already exists`);
+            return res.status(401).send({message : "There is already an account with that username"});
+        }
+
         lastUserId++;
 
         //insert a newUser into 'userCollection'
@@ -156,6 +165,26 @@ app.post("/createUser", async (req, res) => {
     } catch (error) {
         console.error("An error occurered: ", error);
         res.status(500).send({ error: 'An internal server error occured' });
+    }
+});
+
+//Check to see if there is already a user created with username ~ hand in hand with create user
+app.post("/checkUser", async (req, res) => {
+    try {
+        await client.connect();
+
+        const checkUser = await userCollection.findOne({ userName: req.body.userName });
+
+        if (checkUser) {
+            console.log(`User ${checkUser.userName} already exists`);
+            return res.status(200).send({ exists: true });
+        }
+
+        console.log(`User ${req.body.userName} does not exist`);
+        return res.status(200).send({ exists: false });
+    } catch (error) {
+        console.error("An error occurred:", error);
+        res.status(500).send({ error: 'An internal server error occurred' });
     }
 });
 
@@ -227,25 +256,25 @@ app.delete("/deleteUser/:id", async (req, res) => {
 app.get("/listTransactions/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        console.log("User to find: ", userId);
+        // Connect to the database
         await client.connect();
-        console.log("Node connected successfully to GET MongoDB");
-        const query = { "userId": userId };
-        const user = await userCollection
-            .findOne(query);
-        if (!user) {
-            return res.send("User not found").status(404);
-        }
-        const userTransactions = await transactionCollection
-            .find({ userId: userId }).toArray();
 
-        res.send(userTransactions).status(200);
-    }
-    catch (error) {
-        console.log("Error fetching transactions", error);
-        res.send("Internal server error").status(500);
+        // Check if the user exists
+        const user = await userCollection.findOne({ id: userId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Get the user's transactions array
+        const userTransactions = user.transactions || [];
+
+        res.status(200).send(userTransactions);
+    } catch (error) {
+        console.error("Error fetching transactions:", error);
+        res.status(500).send("Internal server error");
     }
 });
+
 
 app.post("/createTransaction/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
@@ -253,61 +282,82 @@ app.post("/createTransaction/:userId", async (req, res) => {
         // Connect to the database
         await client.connect();
 
-        // Check if the user exists
-        const user = await userCollection
-            .findOne({ id: userId });
+        // Extract transaction details from the request body
+        const { amount, description, category } = req.body;
+
+        // Get the user document
+        const user = await userCollection.findOne({ id: userId });
+
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
 
-        // Extract transaction details from the request body
-        const { amount, description, category } = req.body;
+        // Append the new transaction to the user's transactions array
+        const updatedTransactions = user.transactions || [];
+        updatedTransactions.push({
+            amount: amount,
+            description: description,
+            category: category,
+            date: new Date()
+        });
 
-        // Insert the transaction into 'transactions' collection
-        await transactionsCollection
-            .insertOne({
-                userId: userId,
-                amount: amount,
-                description: description,
-                category: category,
-                date: new Date() // You might want to use the actual date from the request
-            });
-
-        res.status(201).send({ message: "Transaction created successfully" });
+        // Update the user document with the updated transactions array
+        await userCollection.updateOne({ id: userId }, { $set: { transactions: updatedTransactions } });
+        
+        res.status(201).send({ message: "Transaction added successfully" });
     } catch (error) {
-        console.error('Error creating transaction:', error);
+        console.error('Error adding transaction:', error);
         res.status(500).send({ message: "Internal server error" });
     }
 });
 
 
 
-app.delete("/deleteTransaction/:userId/:transactionId", async (req, res) => {
+
+
+// Define a new endpoint to handle DELETE request for deleting a transaction
+app.delete("/deleteTransaction/:userId/:transactionIndex", async (req, res) => {
     const userId = Number(req.params.userId);
-    const transactionId = req.params.transactionId;
+    const transactionIndex = Number(req.params.transactionIndex);
     try {
         // Connect to the database
         await client.connect();
 
-        // Check if the user exists
-        const user = await userCollection
-            .findOne({ id: userId });
+        // Get the user document
+        const user = await userCollection.findOne({ id: userId });
+
         if (!user) {
-            return res.send("User not found").status(404);
+            return res.status(404).send({ message: 'User not found' });
         }
 
-        // Delete the transaction from 'transactions' collection
-        const deleteResult = transactionCollection
-            .deleteOne({ userId: userId, _id: ObjectId(transactionId) });
-        if (deleteResult.deletedCount === 0) {
-            return res.status(404).send("Transaction not found");
+        // Get the user's transactions array
+        const updatedTransactions = user.transactions || [];
+
+        // Check if the transaction index is valid
+        if (transactionIndex < 0 || transactionIndex >= updatedTransactions.length) {
+            return res.status(400).send({ message: 'Invalid transaction index' });
         }
-        res.status(200).send("Transaction deleted");
+
+        // Remove the transaction at the specified index
+        updatedTransactions.splice(transactionIndex, 1);
+
+        // Update the user document with the updated transactions array
+        await userCollection.updateOne({ id: userId }, { $set: { transactions: updatedTransactions } });
+
+        res.status(200).send({ message: "Transaction deleted successfully" });
     } catch (error) {
-        console.error("Error deleting transaction:", error);
-        res.status(500).send({ error: 'An internal server error occurred' });
+        console.error('Error deleting transaction:', error);
+        res.status(500).send({ message: "Internal server error" });
     }
 });
+
+
+
+  
+
+
+
+
 
 
 //BUDGET----------------------------------------------------------------------------------------------------------------
