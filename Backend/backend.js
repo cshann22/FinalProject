@@ -14,8 +14,7 @@ const client = new MongoClient(url);
 const db = client.db(dbName);
 
 const userCollection = db.collection("userCollection");
-const transactionCollection = db.collection("transactionCollection");
-const budgetCollection = db.collection("budgetCollection");
+
 
 var lastUserId = 0;
 
@@ -138,11 +137,6 @@ app.post("/createUser", async (req, res) => {
         const result = await userCollection
             .insertOne(newUser);
         console.log(`User create with id: ${newUser.id}`);
-        //Insert empty transaction into 'transactionCollection'
-        // await transactionCollection.insertOne({
-        //     userId: lastUserId,
-        //     transactions: []
-        // });
 
         const newBudget = {
             total: 0,
@@ -157,7 +151,6 @@ app.post("/createUser", async (req, res) => {
         }
         
 
-        //Insert empty budget into 'budgetCollection'
         await userCollection.updateOne({id : newUser.id}, { $set: { budget: newBudget}});
 
         res.send("User created").status(201);
@@ -234,12 +227,6 @@ app.delete("/deleteUser/:id", async (req, res) => {
         if (userDeleteResult.deletedCount === 0) {
             return res.status(404).json({ message: 'User not found' });
         }
-
-        // Delete the associated transaction from 'transactionsCollection'
-        await transactionCollection.deleteOne({ userId: id });
-
-        // Delete the associated budget from 'budgetCollection'
-        await budgetCollection.deleteOne({ userId: id });
 
         res.status(200).json({ message: 'User and associated data deleted successfully' });
     } catch (error) {
