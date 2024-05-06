@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const BudgetingPage = ({ onSwitchView }) => {
     const { userId } = useUser(); // Access the userId from the context
     const [budget, setBudget] = useState({
+        total: 0,
         income: 0,
         housing: 0,
         utilities: 0,
@@ -17,10 +18,21 @@ const BudgetingPage = ({ onSwitchView }) => {
         other: 0
     });
     const [message, setMessage] = useState('');
-
+    const [oldBudget, setOldBudget] = useState(null);
+    const [tempIncome, setTempIncome] = useState('');
     // Calculate total dynamically based on other fields
-    const calculateTotal = () => {
-        return Object.values(budget).reduce((total, value) => total + parseFloat(value), 0);
+    function calculateTotal(){
+        const total = Object.values(budget)
+            .filter((key) => key !== budget.total && key !== budget.income) // Exclude 'total' and 'income'
+            .reduce((amount, value) => amount + parseFloat(value), 0); // Initial value set to 0
+        return total;
+    };
+    
+    const calculateRemainingBalance = () => {
+        const expenses = Object.values(budget)
+        .filter((key) => key !== budget.total && key !== budget.income)
+        .reduce((total, value) => total + parseFloat(value), 0);
+        return budget.income - expenses;
     };
 
     useEffect(() => {
@@ -28,6 +40,8 @@ const BudgetingPage = ({ onSwitchView }) => {
         fetchBudget();
     }, [userId]);
 
+
+    
     const fetchBudget = async () => {
         try {
             const response = await fetch(`http://127.0.0.1:8081/listBudget/${userId}`);
@@ -35,6 +49,8 @@ const BudgetingPage = ({ onSwitchView }) => {
                 const budgetData = await response.json();
                 console.log("Budget data:", budgetData);
                 setBudget(budgetData);
+                setOldBudget(budgetData);
+                setTempIncome(budgetData.income);
             } else {
                 setMessage('Error fetching budget data. Please try again later.');
             }
@@ -46,6 +62,10 @@ const BudgetingPage = ({ onSwitchView }) => {
 
     const handleBudgetUpdate = async () => {
         try {
+            var total = calculateTotal();
+            total = 0;
+            setTempIncome(calculateRemainingBalance());
+            //const updatedBudget = { ...budget, total};
             const response = await fetch(`http://127.0.0.1:8081/changeBudget/${userId}`, {
                 method: 'PUT',
                 headers: {
@@ -80,14 +100,14 @@ const BudgetingPage = ({ onSwitchView }) => {
                 <div className="col-md-6">
                     <h3>Current Budget</h3>
                     <form>
-                        <div className="form-group">
+                    <div className="form-group">
                             <label>Income:</label>
                             <input
-                                type="number"
+                                type="text"
                                 className="form-control"
                                 name="income"
-                                value={budget.income}
-                                onChange={handleBudgetChange}
+                                value={tempIncome}
+                                disabled
                             />
                         </div>
                         <div className="form-group">
@@ -166,6 +186,7 @@ const BudgetingPage = ({ onSwitchView }) => {
                                 type="text"
                                 className="form-control"
                                 name="total"
+                                placeholder='0'
                                 value={calculateTotal()}
                                 disabled
                             />

@@ -5,30 +5,40 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Dashboard = ({ onSwitchView }) => {
   const { userId } = useUser(); // Access the userId from the context
-  const [username, setUsername] = useState(''); // Initialize with 'Guest' as default
+  const [name, setName] = useState(''); // Initialize with 'Guest' as default
   const [latestTransactions, setLatestTransactions] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [budget, setBudget] = useState([]);
   const [viewMode, setViewMode] = useState('dashboard'); // State to manage view mode
+  const [userData, setUserData] = useState('');
 
   useEffect(() => {
     // Function to fetch user data based on userId
     const fetchUserData = async () => {
       try {
-        if (userId) {
-          const response = await fetch(`http://127.0.0.1/${userId}`); // Adjust the URL based on your backend API
-          if (response.ok) {
-            const userData = await response.json();
-            setUsername(userData.username); // Set the username obtained from the server
-          }
+        console.log(`Fetching user data for user ID: ${userId}`);
+        const response = await fetch(`http://127.0.0.1:8081/${userId}`);
+        console.log(response);
+        if (response.ok) {
+          console.log("User data retrieved successfully");
+          const userData = await response.json();
+          console.log("User data:", userData);
+          setUserData(userData);
+        } else {
+          console.error('Error fetching user data:', response.statusText);
+          // Handle error accordingly
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        // Handle error accordingly
       }
     };
+
 
     // Function to fetch the latest 5 transactions
     const fetchLatestTransactions = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8081/latestTransactions/${userId}`);
+        const response = await fetch(`http://127.0.0.1:8081/listTransactions/${userId}`);
         if (response.ok) {
           const transactionsData = await response.json();
           setLatestTransactions(transactionsData);
@@ -36,6 +46,20 @@ const Dashboard = ({ onSwitchView }) => {
       } catch (error) {
         console.error('Error fetching latest transactions:', error);
       }
+    };
+
+    const fetchBudget = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8081/listBudget/${userId}`);
+        if (response.ok) {
+          const budgetData = await response.json();
+          setBudget(budgetData);
+        }
+      }
+      catch (error) {
+        console.log('Error fetching budget');
+      }
+
     };
 
     fetchUserData(); // Call the fetchUserData function when userId changes
@@ -60,12 +84,12 @@ const Dashboard = ({ onSwitchView }) => {
       {/* Navigation bar */}
       <nav className="navbar navbar-dark bg-dark">
         {/* Left side: User's username */}
-        <span className="navbar-brand">Welcome, {username}!</span>
+        <span className="navbar-brand">Welcome, {userData.name}!</span>
         {/* Right side: Buttons for Account Settings, Transactions, and Logout */}
         <div className="d-flex">
           <button className="btn btn-outline-light mr-2" onClick={() => switchViewMode('account-settings')}>
             Account Settings
-          </button> 
+          </button>
           <button className="btn btn-outline-light" onClick={handleLogout}>
             Logout
           </button>
@@ -99,7 +123,7 @@ const Dashboard = ({ onSwitchView }) => {
                 <ul className="list-group">
                   {latestTransactions.slice(0, 5).map(transaction => (
                     <li key={transaction._id} className="list-group-item">
-                      Amount: {transaction.amount}, Description: {transaction.description}, Category: {transaction.category}
+                      Amount: {transaction.amount} - Description: {transaction.description} - Category: {transaction.category}
                     </li>
                   ))}
                 </ul>
@@ -116,6 +140,7 @@ const Dashboard = ({ onSwitchView }) => {
                   <button className="btn btn-primary" onClick={() => switchViewMode('budgeting')}>
                     Budget
                   </button>
+
                 </div>
               </div>
             </div>
@@ -126,8 +151,8 @@ const Dashboard = ({ onSwitchView }) => {
               <div className="card-body">
                 <h5 className="card-title">Goals</h5>
                 <button className="btn btn-primary" onClick={() => switchViewMode('goals')}>
-                    Goals
-                  </button>
+                  Goals
+                </button>
               </div>
             </div>
           </div>

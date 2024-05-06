@@ -18,6 +18,7 @@ const Transactions = ({ onSwitchView }) => {
 
     const fetchTransactions = async () => {
         try {
+            console.log(`User id : ${userId} --`)
             const response = await fetch(`http://127.0.0.1:8081/listTransactions/${userId}`);
             if (response.ok) {
                 const transactionsData = await response.json();

@@ -60,15 +60,15 @@ app.get("/listUsers", async (req, res) => {
 
 
 //Get a user by ID
-app.get("./:id", async (req, res) => {
+app.get("/:id", async (req, res) => {
     const userId = Number(req.params.id);
-    console.log("User to find : ", userId);
+    const query = { id : userId };
+    console.log("User to find  ", userId);
     await client.connect();
     console.log("Node connected successfully to GET MongoDB");
-    const query = { "id": userId };
     const results = await userCollection
         .findOne(query);
-    console.log("Results: ", results);
+    console.log("Results: ------- ", results);
     if (!results) res.send("User not found").status(404);
     else res.send(results).status(200);
 });
@@ -139,27 +139,26 @@ app.post("/createUser", async (req, res) => {
             .insertOne(newUser);
         console.log(`User create with id: ${newUser.id}`);
         //Insert empty transaction into 'transactionCollection'
-        await transactionCollection.insertOne({
-            userId: lastUserId,
-            transactions: []
-        });
+        // await transactionCollection.insertOne({
+        //     userId: lastUserId,
+        //     transactions: []
+        // });
 
+        const newBudget = {
+            total: 0,
+            income: 0,
+            housing: 0,
+            utilites: 0,
+            food: 0,
+            transportation: 0,
+            personal: 0,
+            savings: 0,
+            other: 0
+        }
+        
 
         //Insert empty budget into 'budgetCollection'
-        await budgetCollection.insertOne({
-            userId: lastUserId,
-            budget: {
-                total: 0,
-                income: 0,
-                housing: 0,
-                utilites: 0,
-                food: 0,
-                transportation: 0,
-                personal: 0,
-                savings: 0,
-                other: 0
-            }
-        });
+        await userCollection.updateOne({id : newUser.id}, { $set: { budget: newBudget}});
 
         res.send("User created").status(201);
     } catch (error) {
@@ -351,31 +350,36 @@ app.delete("/deleteTransaction/:userId/:transactionIndex", async (req, res) => {
 
 app.get("/listBudget/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
+    const query = { id: userId };
     try {
         console.log("User to find: ", userId);
         await client.connect();
-        console.log("Node connected successfully to GET MongoDB");
-        const query = { "userId": userId };
-        const user = await userCollection
-            .findOne(query);
-        if (!user) {
-            return res.send("User not found").status(404);
-        }
-        const userBudget = await budgetCollection
-            .find({ userId: userId }).toArray();
+        console.log("Finding user budget: ", userId);
 
-        res.send(userTransactions).status(200);
-    }
-    catch (error) {
-        console.log("Error fetching transactions", error);
-        res.send("Internal server error").status(500);
+        console.log("Node connected successfully to MongoDB");
+
+        // Check if the user exists
+        const user = await userCollection.findOne({ id: userId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Extract budget details from user object
+        const { budget } = user;
+
+        res.status(200).json(budget);
+    } catch (error) {
+        console.error("Error fetching budget:", error);
+        res.status(500).send("Internal server error");
     }
 });
 
 
+
+
 app.put("/changeBudget/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
-    const query = { userId: userId };
+    const query = { id: userId };
     try {
         console.log("User to find: ", userId);
         await client.connect();
@@ -395,58 +399,23 @@ app.put("/changeBudget/:userId", async (req, res) => {
 
         // Define the update document for the budget
         const updateBudget = {
-            $set: {}
-        };
-
-        // Add non-null fields to the update document
-        if (total !== null && total !== undefined) {
-            updateBudget.$set.total = total;
-        } else {
-            updateBudget.$set.total = user.total;
-        }
-        if (income !== null && income !== undefined) {
-            updateBudget.$set.income = income;
-        } else {
-            updateBudget.$set.income = user.income;
-        }
-        if (housing !== null && housing !== undefined) {
-            updateBudget.$set.housing = housing;
-        } else {
-            updateBudget.$set.housing = user.housing;
-        }
-        if (utilities !== null && utilities !== undefined) {
-            updateBudget.$set.utilities = utilities;
-        } else {
-            updateBudget.$set.utilites = user.utilites;
-        }
-        if (food !== null && food !== undefined) {
-            updateBudget.$set.food = food;
-        } else {
-            updateBudget.$set.food = user.food;
-        }
-        if (transportation !== null && transportation !== undefined) {
-            updateBudget.$set.transportation = transportation;
-        } else {
-            updateBudget.$set.transportation = user.transportation;
-        }
-        if (personal !== null && personal !== undefined) {
-            updateBudget.$set.personal = personal;
-        } else {
-            updateBudget.$set.personal = user.personal;
-        }
-        if (savings !== null && savings !== undefined) {
-            updateBudget.$set.savings = savings;
-        } else {
-            updateBudget.$set.savings = user.savings;
-        }
-        if (other !== null && other !== undefined) {
-            updateBudget.$set.other = other;
-        } else {
-            updateBudget.$set.other = user.other;
+            $set: {
+                budget:{
+                    total: total !== undefined ? total : user.budget.total,
+                    income: income !== undefined ? income : user.budget.income,
+                    housing: housing !== undefined ? housing : user.budget.housing,
+                    utilities: utilities !== undefined ? utilities : user.budget.utilities,
+                    food: food !== undefined ? food : user.budget.food,
+                    transportation: transportation !== undefined ? transportation : user.budget.transportation,
+                    personal: personal !== undefined ? personal : user.budget.personal,
+                    savings: savings !== undefined ? savings : user.budget.savings,
+                    other: other !== undefined ? other : user.budget.other
+                }
+            }
         }
 
         // Update the budget for the user
-        const result = await budgetCollection
+        const result = await userCollection
             .updateOne(query, updateBudget);
 
         res.send("Budget updated successfully").status(200);
@@ -574,52 +543,31 @@ app.get("/getIncome/:userId", async (req, res) => {
 // PUT request to update income
 app.put("/updateIncome/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
-    const query = { userId: userId };
+    const query = { id: userId };
     try {
         console.log("User to find: ", userId);
         await client.connect();
-        console.log("Update user income: ", userId);
-
+        console.log("Update user budget: ", userId);
         console.log("Node connected successfully to MongoDB");
 
         // Check if the user exists
-        const user = await userCollection
-            .findOne({ id: userId });
+        const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Extract budget details from request body
-        const { total, income, housing, utilities, food, transportation, personal, savings, other } = req.body;
+        // Extract the income from the request body
+        const { income } = req.body;
 
         // Define the update document for the budget
         const updateBudget = {
-            $set: {}
+            $set: {
+                "budget.income": income !== undefined ? income : user.budget.income
+            }
         };
 
-        // Add non-null fields to the update document
-        if (total !== null && total !== undefined) {
-            updateBudget.$set.total = income;
-        } else {
-            updateBudget.$set.total = user.total;
-        }
-        if (income !== null && income !== undefined) {
-            updateBudget.$set.income = income;
-        } else {
-            updateBudget.$set.income = user.income;
-        }
-
-        updateBudget.$set.housing = user.housing;
-        updateBudget.$set.utilites = user.utilites;
-        updateBudget.$set.food = user.food;
-        updateBudget.$set.transportation = user.transportation;
-        updateBudget.$set.personal = user.personal;
-        updateBudget.$set.savings = user.savings;
-        updateBudget.$set.other = user.other;
-
         // Update the budget for the user
-        const result = await budgetCollection
-            .updateOne(query, updateBudget);
+        const result = await userCollection.updateOne(query, updateBudget);
 
         res.send("Budget updated successfully").status(200);
     } catch (error) {
