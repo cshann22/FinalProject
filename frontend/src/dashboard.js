@@ -79,8 +79,10 @@ const Dashboard = ({ onSwitchView }) => {
             {/* Content for the first box */}
             <div className="card h-100">
               <div className="card-body">
-                <h5 className="card-title">Box 1</h5>
-                <p className="card-text">Content for Box 1 goes here.</p>
+                <h5 className="card-title">Income</h5>
+                <button className="btn btn-primary mb-3" onClick={() => switchViewMode('income')}>
+                  Income
+                </button>
               </div>
             </div>
           </div>
@@ -122,8 +124,10 @@ const Dashboard = ({ onSwitchView }) => {
             {/* Content for the fourth box */}
             <div className="card h-100">
               <div className="card-body">
-                <h5 className="card-title">Box 4</h5>
-                <p className="card-text">Content for Box 4 goes here.</p>
+                <h5 className="card-title">Goals</h5>
+                <button className="btn btn-primary" onClick={() => switchViewMode('goals')}>
+                    Goals
+                  </button>
               </div>
             </div>
           </div>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from './userContext'; // Import the useUser hook
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
+
 const BudgetingPage = ({ onSwitchView }) => {
     const { userId } = useUser(); // Access the userId from the context
     const [budget, setBudget] = useState({
@@ -177,5 +179,8 @@ const BudgetingPage = ({ onSwitchView }) => {
         </div>
     );
 };
+
+
+
 
 export default BudgetingPage;

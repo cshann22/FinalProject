@@ -7,6 +7,8 @@ import Dashboard from './dashboard';
 import AccountSettings from './accountSettings'; // Import AccountSettings component
 import Transactions from './transactions'; // Import Transactions component
 import BudgetingPage from './budget'; // Import BudgetingPage component
+import IncomePage from './income';
+import GoalsPage from './goals';
 import { UserProvider } from './userContext'; // Import the UserProvider
 
 const App = () => {
@@ -49,6 +51,12 @@ const App = () => {
         {view === 'budgeting' && (
           <BudgetingPage onSwitchView={handleSwitchView} />
         )}
+        {view === 'income' && (
+  <IncomePage onSwitchView={handleSwitchView} />
+)}
+        {view === 'goals' && (
+  <GoalsPage onSwitchView={handleSwitchView} />
+)}
       </div>
     </UserProvider>
   );

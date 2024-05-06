@@ -121,9 +121,9 @@ app.post("/createUser", async (req, res) => {
 
         const checkUser = await userCollection
             .findOne({ userName: req.body.userName });
-        if(checkUser){
+        if (checkUser) {
             console.log(`User ${checkUser.userName} already exists`);
-            return res.status(401).send({message : "There is already an account with that username"});
+            return res.status(401).send({ message: "There is already an account with that username" });
         }
 
         lastUserId++;
@@ -275,7 +275,6 @@ app.get("/listTransactions/:userId", async (req, res) => {
     }
 });
 
-
 app.post("/createTransaction/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
@@ -283,7 +282,7 @@ app.post("/createTransaction/:userId", async (req, res) => {
         await client.connect();
 
         // Extract transaction details from the request body
-        const { amount, description, category } = req.body;
+        const { amount, description, category, date } = req.body;
 
         // Get the user document
         const user = await userCollection.findOne({ id: userId });
@@ -298,12 +297,12 @@ app.post("/createTransaction/:userId", async (req, res) => {
             amount: amount,
             description: description,
             category: category,
-            date: new Date()
+            date: date // Use provided date
         });
 
         // Update the user document with the updated transactions array
         await userCollection.updateOne({ id: userId }, { $set: { transactions: updatedTransactions } });
-        
+
         res.status(201).send({ message: "Transaction added successfully" });
     } catch (error) {
         console.error('Error adding transaction:', error);
@@ -311,11 +310,6 @@ app.post("/createTransaction/:userId", async (req, res) => {
     }
 });
 
-
-
-
-
-// Define a new endpoint to handle DELETE request for deleting a transaction
 app.delete("/deleteTransaction/:userId/:transactionIndex", async (req, res) => {
     const userId = Number(req.params.userId);
     const transactionIndex = Number(req.params.transactionIndex);
@@ -350,14 +344,6 @@ app.delete("/deleteTransaction/:userId/:transactionIndex", async (req, res) => {
         res.status(500).send({ message: "Internal server error" });
     }
 });
-
-
-
-  
-
-
-
-
 
 
 //BUDGET----------------------------------------------------------------------------------------------------------------
@@ -415,30 +401,48 @@ app.put("/changeBudget/:userId", async (req, res) => {
         // Add non-null fields to the update document
         if (total !== null && total !== undefined) {
             updateBudget.$set.total = total;
+        } else {
+            updateBudget.$set.total = user.total;
         }
         if (income !== null && income !== undefined) {
             updateBudget.$set.income = income;
+        } else {
+            updateBudget.$set.income = user.income;
         }
         if (housing !== null && housing !== undefined) {
             updateBudget.$set.housing = housing;
+        } else {
+            updateBudget.$set.housing = user.housing;
         }
         if (utilities !== null && utilities !== undefined) {
             updateBudget.$set.utilities = utilities;
+        } else {
+            updateBudget.$set.utilites = user.utilites;
         }
         if (food !== null && food !== undefined) {
             updateBudget.$set.food = food;
+        } else {
+            updateBudget.$set.food = user.food;
         }
         if (transportation !== null && transportation !== undefined) {
             updateBudget.$set.transportation = transportation;
+        } else {
+            updateBudget.$set.transportation = user.transportation;
         }
         if (personal !== null && personal !== undefined) {
             updateBudget.$set.personal = personal;
+        } else {
+            updateBudget.$set.personal = user.personal;
         }
         if (savings !== null && savings !== undefined) {
             updateBudget.$set.savings = savings;
+        } else {
+            updateBudget.$set.savings = user.savings;
         }
         if (other !== null && other !== undefined) {
             updateBudget.$set.other = other;
+        } else {
+            updateBudget.$set.other = user.other;
         }
 
         // Update the budget for the user
@@ -452,4 +456,174 @@ app.put("/changeBudget/:userId", async (req, res) => {
     }
 });
 
+//GOALS----------------------------------------------------------------------------------------------------------------
 
+app.get("/getGoals/:userId", async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        // Connect to the database
+        await client.connect();
+
+        // Check if the user exists
+        const user = await userCollection.findOne({ id: userId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Get the user's goals array
+        const userGoals = user.goals || [];
+
+        res.status(200).send(userGoals);
+    } catch (error) {
+        console.error("Error fetching goals:", error);
+        res.status(500).send("Internal server error");
+    }
+});
+
+// POST request to add a new goal
+app.post("/addGoal/:userId", async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        // Connect to the database
+        await client.connect();
+
+        // Extract goal details from the request body
+        const { goal } = req.body;
+
+        // Get the user document
+        const user = await userCollection.findOne({ id: userId });
+
+        if (!user) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        // Append the new goal to the user's goals array
+        const updatedGoals = user.goals || [];
+        updatedGoals.push({
+            goal: goal
+        });
+
+        // Update the user document with the updated goals array
+        await userCollection.updateOne({ id: userId }, { $set: { goals: updatedGoals } });
+
+        res.status(201).send({ message: "Goal added successfully" });
+    } catch (error) {
+        console.error('Error adding goal:', error);
+        res.status(500).send({ message: "Internal server error" });
+    }
+});
+
+// DELETE request to delete a goal
+app.delete("/deleteGoal/:userId/:goalId", async (req, res) => {
+    const userId = Number(req.params.userId);
+    const goalId = req.params.goalId;
+    try {
+        // Connect to the database
+        await client.connect();
+
+        // Get the user document
+        const user = await userCollection.findOne({ id: userId });
+
+        if (!user) {
+            return res.status(404).send({ message: 'User not found' });
+        }
+
+        // Get the user's goals array
+        const updatedGoals = user.goals || [];
+
+        // Filter out the goal with the specified goalId
+        const filteredGoals = updatedGoals.filter(goal => goal._id !== goalId);
+
+        // Update the user document with the filtered goals array
+        await userCollection.updateOne({ id: userId }, { $set: { goals: filteredGoals } });
+
+        res.status(200).send({ message: "Goal deleted successfully" });
+    } catch (error) {
+        console.error('Error deleting goal:', error);
+        res.status(500).send({ message: "Internal server error" });
+    }
+});
+
+
+//INCOME----------------------------------------------------------------------------------------------------------------
+
+
+// GET request to fetch income
+app.get("/getIncome/:userId", async (req, res) => {
+    const userId = Number(req.params.userId);
+    try {
+        // Connect to the database
+        await client.connect();
+
+        // Check if the user exists
+        const user = await userCollection.findOne({ id: userId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Get the user's income
+        const userIncome = user.income || 0;
+
+        res.status(200).send(userIncome.toString()); // Convert to string to send as response
+    } catch (error) {
+        console.error("Error fetching income:", error);
+        res.status(500).send("Internal server error");
+    }
+});
+
+// PUT request to update income
+app.put("/updateIncome/:userId", async (req, res) => {
+    const userId = Number(req.params.userId);
+    const query = { userId: userId };
+    try {
+        console.log("User to find: ", userId);
+        await client.connect();
+        console.log("Update user income: ", userId);
+
+        console.log("Node connected successfully to MongoDB");
+
+        // Check if the user exists
+        const user = await userCollection
+            .findOne({ id: userId });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Extract budget details from request body
+        const { total, income, housing, utilities, food, transportation, personal, savings, other } = req.body;
+
+        // Define the update document for the budget
+        const updateBudget = {
+            $set: {}
+        };
+
+        // Add non-null fields to the update document
+        if (total !== null && total !== undefined) {
+            updateBudget.$set.total = income;
+        } else {
+            updateBudget.$set.total = user.total;
+        }
+        if (income !== null && income !== undefined) {
+            updateBudget.$set.income = income;
+        } else {
+            updateBudget.$set.income = user.income;
+        }
+
+        updateBudget.$set.housing = user.housing;
+        updateBudget.$set.utilites = user.utilites;
+        updateBudget.$set.food = user.food;
+        updateBudget.$set.transportation = user.transportation;
+        updateBudget.$set.personal = user.personal;
+        updateBudget.$set.savings = user.savings;
+        updateBudget.$set.other = user.other;
+
+        // Update the budget for the user
+        const result = await budgetCollection
+            .updateOne(query, updateBudget);
+
+        res.send("Budget updated successfully").status(200);
+    } catch (error) {
+        console.error("Error updating budget:", error);
+        res.send("Internal server error").status(500);
+    }
+});
