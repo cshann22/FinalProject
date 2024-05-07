@@ -30,7 +30,7 @@ const AccountSettings = ({ onSwitchView }) => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-0">
       <h2>Account Settings</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -60,7 +60,7 @@ const AccountSettings = ({ onSwitchView }) => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary mr-2">Update</button>
+        <button type="submit" className="btn btn-success mr-2">Update</button>
         <button type="button" className="btn btn-secondary" onClick={() => onSwitchView('dashboard')}>Back to Dashboard</button>
       </form>
       {message && <p className="mt-3">{message}</p>}

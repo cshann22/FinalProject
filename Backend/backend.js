@@ -472,7 +472,7 @@ app.post("/addGoal/:userId", async (req, res) => {
 // DELETE request to delete a goal
 app.delete("/deleteGoal/:userId/:goalId", async (req, res) => {
     const userId = Number(req.params.userId);
-    const goalId = req.params.goalId;
+    const goalId = Number(req.params.goalId);
     try {
         // Connect to the database
         await client.connect();
@@ -487,11 +487,15 @@ app.delete("/deleteGoal/:userId/:goalId", async (req, res) => {
         // Get the user's goals array
         const updatedGoals = user.goals || [];
 
+        if (goalId < 0 || goalId >= updatedGoals.length) {
+            return res.status(400).send({ message: 'Invalid goal index' });
+        }
+
         // Filter out the goal with the specified goalId
-        const filteredGoals = updatedGoals.filter(goal => goal._id !== goalId);
+        updatedGoals.splice(goalId, 1);
 
         // Update the user document with the filtered goals array
-        await userCollection.updateOne({ id: userId }, { $set: { goals: filteredGoals } });
+        await userCollection.updateOne({ id: userId }, { $set: { goals: updatedGoals } });
 
         res.status(200).send({ message: "Goal deleted successfully" });
     } catch (error) {

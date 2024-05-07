@@ -191,7 +191,7 @@ const BudgetingPage = ({ onSwitchView }) => {
                                 disabled
                             />
                         </div>
-                        <button type="button" className="btn btn-primary" onClick={handleBudgetUpdate}>Update Budget</button>
+                        <button type="button" className="btn btn-success" onClick={handleBudgetUpdate}>Update Budget</button>
                         {message && <p>{message}</p>}
                         <button className="btn btn-secondary" onClick={() => onSwitchView('dashboard')}>Back to Dashboard</button>
                     </form>

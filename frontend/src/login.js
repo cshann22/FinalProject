@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './App.css';
 import { useUser } from './userContext'; // Import the useUser hook
 
 const Login = ({ onLogin, handleSwitchView }) => {
@@ -55,11 +54,11 @@ const Login = ({ onLogin, handleSwitchView }) => {
             <label htmlFor="password" className="form-label">Password:</label>
             <input type="password" className="form-control" id="password" name="password" placeholder="Password" onChange={handleInputChange} />
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>Login</button>
+          <button type="submit" className="btn btn-success" disabled={loading}>Login</button>
           {error && <p>{error}</p>}
         </form>
         <div className="d-flex justify-content-between mt-3">
-          <button className="btn btn-outline-primary" onClick={() => handleSwitchView('createUser')}>Create Account</button>
+          <button className="btn btn-outline-success" onClick={() => handleSwitchView('createUser')}>Create Account</button>
         </div>
       </div>
     </div>

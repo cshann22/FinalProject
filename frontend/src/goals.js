@@ -61,9 +61,13 @@ const GoalsPage = ({ onSwitchView }) => {
             const response = await fetch(`http://127.0.0.1:8081/deleteGoal/${userId}/${goalId}`, {
                 method: 'DELETE',
             });
+    
+            // Log response for debugging
+            console.log('Delete Goal Response:', response);
+    
             if (response.ok) {
                 setMessage('Goal deleted successfully!');
-                fetchGoals();
+                fetchGoals(); // Assuming fetchGoals is a function to fetch updated goals
             } else {
                 setMessage('Error deleting goal. Please try again later.');
             }
@@ -72,6 +76,7 @@ const GoalsPage = ({ onSwitchView }) => {
             setMessage('An error occurred. Please try again later.');
         }
     };
+    
 
     return (
         <div className="container">
@@ -88,16 +93,16 @@ const GoalsPage = ({ onSwitchView }) => {
                             onChange={(e) => setNewGoal(e.target.value)}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={handleAddGoal}>Add Goal</button>
+                    <button className="btn btn-success" onClick={handleAddGoal}>Add Goal</button>
                     {message && <p>{message}</p>}
                 </div>
                 <div className="col-md-6">
                     <h3>Current Goals</h3>
                     <ul className="list-group">
                         {goals.map((goal) => (
-                            <li key={goal._id} className="list-group-item">
+                            <li key={goal._id} className="list-group-item" style={{ backgroundColor: '#dcedc8' }}>
                                 {goal.goal}
-                                <button className="btn btn-danger" onClick={() => handleDeleteGoal(goal._id)}>Delete</button>
+                                <br/><br/> <button className="btn btn-danger" onClick={() => handleDeleteGoal(goal._id)}>Delete</button>
                             </li>
                         ))}
                     </ul>

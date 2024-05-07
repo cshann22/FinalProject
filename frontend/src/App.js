@@ -1,6 +1,5 @@
-// App.js
+
 import React, { useState } from 'react';
-import './App.css';
 import Login from './login';
 import CreateUser from './createUser';
 import Dashboard from './dashboard';
@@ -20,21 +19,15 @@ const App = () => {
 
   return (
     <UserProvider>
-      <div className="app">
+      <div className="app" style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #b5e6b5, #7ec87e)' }}>
         {view === 'login' && (
-          <div className="container-fluid d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-            <div>
-              <Login onLogin={() => handleSwitchView('dashboard')} handleSwitchView={handleSwitchView} />
-
-            </div>
+          <div className="container-fluid d-flex justify-content-center align-items-center">
+            <Login onLogin={() => handleSwitchView('dashboard')} handleSwitchView={handleSwitchView} />
           </div>
         )}
         {view === 'createUser' && (
-          <div className="container-fluid d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-            <div>
-              <CreateUser handleSwitchView={handleSwitchView} />
-              <button className="btn btn-outline-primary" onClick={() => handleSwitchView('login')}>Back to Login</button>
-            </div>
+          <div className="container-fluid d-flex justify-content-center align-items-center">
+            <CreateUser handleSwitchView={handleSwitchView} />
           </div>
         )}
 
@@ -52,11 +45,11 @@ const App = () => {
           <BudgetingPage onSwitchView={handleSwitchView} />
         )}
         {view === 'income' && (
-  <IncomePage onSwitchView={handleSwitchView} />
-)}
+          <IncomePage onSwitchView={handleSwitchView} />
+        )}
         {view === 'goals' && (
-  <GoalsPage onSwitchView={handleSwitchView} />
-)}
+          <GoalsPage onSwitchView={handleSwitchView} />
+        )}
       </div>
     </UserProvider>
   );

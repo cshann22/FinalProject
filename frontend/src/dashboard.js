@@ -80,86 +80,89 @@ const Dashboard = ({ onSwitchView }) => {
   };
 
   return (
-    <div className="d-flex flex-column" style={{ minHeight: '100vh' }}>
-      {/* Navigation bar */}
-      <nav className="navbar navbar-dark bg-dark">
-        {/* Left side: User's username */}
-        <span className="navbar-brand">Welcome, {userData.name}!</span>
-        {/* Right side: Buttons for Account Settings, Transactions, and Logout */}
-        <div className="d-flex">
-          <button className="btn btn-outline-light mr-2" onClick={() => switchViewMode('account-settings')}>
-            Account Settings
-          </button>
-          <button className="btn btn-outline-light" onClick={handleLogout}>
-            Logout
-          </button>
+  <div className="d-flex flex-column" style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #b5e6b5, #7ec87e)' }}>
+    {/* Navigation bar */}
+    <nav className="navbar navbar-dark bg-success">
+      {/* Left side: User's username */}
+      <span className="navbar-brand">Welcome, {userData.name}!</span>
+      {/* Right side: Buttons for Account Settings, Transactions, and Logout */}
+      <div className="d-flex">
+        <button className="btn btn-outline-light mr-2" onClick={() => switchViewMode('account-settings')}>
+          Account Settings
+        </button>
+        <button className="btn btn-outline-light" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+    </nav>
+
+    {/* Margin between nav bar and top boxes */}
+    <div className="mt-4"></div>
+
+    {/* Main content */}
+    <div className="container-fluid flex-grow-1">
+      <div className="row h-100">
+        <div className="col-md-6 mb-4">
+          {/* Content for the first box */}
+          <div className="card h-100" style={{ backgroundColor: '#c8e6c9' }}>
+            <div className="card-body">
+              <h5 className="card-title">Income</h5>
+              <button className="btn btn-success mb-3" onClick={() => switchViewMode('income')}>
+                Income
+              </button>
+            </div>
+          </div>
         </div>
-      </nav>
-
-      {/* Main content */}
-      <div className="container-fluid flex-grow-1">
-        <div className="row h-100">
+        <div className="col-md-6 mb-4">
+          {/* Content for the second box */}
+          <div className="card h-100" style={{ backgroundColor: '#c8e6c9' }}>
+            <div className="card-body">
+              <h5 className="card-title">Transactions</h5>
+              {/* Button to view all transactions */}
+              <button className="btn btn-success mb-3" onClick={() => switchViewMode('transactions')}>
+                View All Transactions
+              </button>
+              {/* Display the latest 5 transactions */}
+              <ul className="list-group">
+                {latestTransactions.slice(0, 5).map(transaction => (
+                  <li key={transaction._id} className="list-group-item" style={{ backgroundColor: '#dcedc8' }}>
+                    Amount: {transaction.amount} - Description: {transaction.description} - Category: {transaction.category}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+        {/* Display the third box with Budgeting button only when viewMode is not 'budgeting' */}
+        {viewMode !== 'budgeting' && (
           <div className="col-md-6 mb-4">
-            {/* Content for the first box */}
-            <div className="card h-100">
+            <div className="card h-100" style={{ backgroundColor: '#c8e6c9' }}>
               <div className="card-body">
-                <h5 className="card-title">Income</h5>
-                <button className="btn btn-primary mb-3" onClick={() => switchViewMode('income')}>
-                  Income
+                <h5 className="card-title">Budgeting Page</h5>
+                {/* Button to switch to budgeting view */}
+                <button className="btn btn-success" onClick={() => switchViewMode('budgeting')}>
+                  Budget
                 </button>
               </div>
             </div>
           </div>
-          <div className="col-md-6 mb-4">
-            {/* Content for the second box */}
-            <div className="card h-100">
-              <div className="card-body">
-                <h5 className="card-title">Transactions</h5>
-                {/* Button to view all transactions */}
-                <button className="btn btn-primary mb-3" onClick={() => switchViewMode('transactions')}>
-                  Transactions
-                </button>
-                {/* Display the latest 5 transactions */}
-                <ul className="list-group">
-                  {latestTransactions.slice(0, 5).map(transaction => (
-                    <li key={transaction._id} className="list-group-item">
-                      Amount: {transaction.amount} - Description: {transaction.description} - Category: {transaction.category}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-          {/* Display the third box with Budgeting button only when viewMode is not 'budgeting' */}
-          {viewMode !== 'budgeting' && (
-            <div className="col-md-6 mb-4">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h5 className="card-title">Budgeting Page</h5>
-                  {/* Button to switch to budgeting view */}
-                  <button className="btn btn-primary" onClick={() => switchViewMode('budgeting')}>
-                    Budget
-                  </button>
-
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="col-md-6 mb-4">
-            {/* Content for the fourth box */}
-            <div className="card h-100">
-              <div className="card-body">
-                <h5 className="card-title">Goals</h5>
-                <button className="btn btn-primary" onClick={() => switchViewMode('goals')}>
-                  Goals
-                </button>
-              </div>
+        )}
+        <div className="col-md-6 mb-4">
+          {/* Content for the fourth box */}
+          <div className="card h-100" style={{ backgroundColor: '#c8e6c9' }}>
+            <div className="card-body">
+              <h5 className="card-title">Goals</h5>
+              <button className="btn btn-success" onClick={() => switchViewMode('goals')}>
+                Goals
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+  
 };
 
 export default Dashboard;

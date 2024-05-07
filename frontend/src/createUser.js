@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './App.css';
 
 const CreateUser = ({ handleSwitchView }) => {
   const [userFormData, setUserFormData] = useState({
@@ -88,16 +87,17 @@ const CreateUser = ({ handleSwitchView }) => {
             <label htmlFor="password" className="form-label">Password:</label>
             <input type="password" className="form-control" id="password" name="password" placeholder="Password" value={userFormData.password} onChange={handleInputChange} />
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>Create User</button>
+          <button type="submit" className="btn btn-success" disabled={loading}>Create User</button>
           {error && <p>{error}</p>}
           {successMessage && <p>{successMessage}</p>}
         </form>
         <div className="d-flex justify-content-between mt-3">
-          <button className="btn btn-outline-primary" onClick={() => handleSwitchView('login')}>Back to Login</button>
+          <button className="btn btn-outline-success" onClick={() => handleSwitchView('login')}>Back to Login</button>
         </div>
       </div>
     </div>
   );
 };
+
 
 export default CreateUser;

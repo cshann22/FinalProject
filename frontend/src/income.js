@@ -64,7 +64,7 @@ const IncomePage = ({ onSwitchView }) => {
                                 onChange={(e) => setIncome(parseFloat(e.target.value))}
                             />
                         </div>
-                        <button type="button" className="btn btn-primary" onClick={handleIncomeUpdate}>Update Income</button>
+                        <button type="button" className="btn btn-success" onClick={handleIncomeUpdate}>Update Income</button>
                         {message && <p>{message}</p>}
                         <button className="btn btn-secondary" onClick={() => onSwitchView('dashboard')}>Back to Dashboard</button>
                     </form>
