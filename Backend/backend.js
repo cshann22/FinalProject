@@ -38,12 +38,8 @@ app.listen(port, () => {
 });
 
 
-
-
-
 //USERS----------------------------------------------------------------------------------------------------------------
 
-//List all users
 app.get("/listUsers", async (req, res) => {
     await client.connect();
     console.log("Node connected successfully to GET MongoDB");
@@ -57,8 +53,6 @@ app.get("/listUsers", async (req, res) => {
     res.send(results);
 })
 
-
-//Get a user by ID
 app.get("/:id", async (req, res) => {
     const userId = Number(req.params.id);
     const query = { id : userId };
@@ -72,20 +66,15 @@ app.get("/:id", async (req, res) => {
     else res.send(results).status(200);
 });
 
-
 app.post("/login", async (req, res) => {
     try {
-        // Extract username and password from request body
         const loginUser = {
             "userName": req.body.userName,
             "password": req.body.password
         };
-
-        // Connect to the database
         await client.connect();
         console.log("Node connected successfully to MongoDB");
 
-        // Find the user by username in the 'userCollection'
         const user = await userCollection.findOne({ userName: loginUser.userName });
         if (!user) {
             // User not found
@@ -93,13 +82,10 @@ app.post("/login", async (req, res) => {
         }
         console.log(`User found: ${user.userName}`);
 
-        // Check if the provided password matches the password stored in the database
         if (user.password !== loginUser.password) {
             // Passwords don't match
             return res.status(401).send({ message: "Invalid username or password" });
         }
-
-        // User login successful
         console.log("User logged in:", user);
         res.status(201).send({ message: "Login successful", user: user });
     } catch (error) {
@@ -108,15 +94,9 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
-
-
-
-//Create a user with transponding budget and transactions
 app.post("/createUser", async (req, res) => {
     try {
         await client.connect();
-
 
         const checkUser = await userCollection
             .findOne({ userName: req.body.userName });
@@ -127,7 +107,6 @@ app.post("/createUser", async (req, res) => {
 
         lastUserId++;
 
-        //insert a newUser into 'userCollection'
         const newUser = {
             "id": lastUserId,
             "name": req.body.name,
@@ -149,7 +128,6 @@ app.post("/createUser", async (req, res) => {
             savings: 0,
             other: 0
         }
-        
 
         await userCollection.updateOne({id : newUser.id}, { $set: { budget: newBudget}});
 
@@ -160,7 +138,6 @@ app.post("/createUser", async (req, res) => {
     }
 });
 
-//Check to see if there is already a user created with username ~ hand in hand with create user
 app.post("/checkUser", async (req, res) => {
     try {
         await client.connect();
@@ -180,14 +157,12 @@ app.post("/checkUser", async (req, res) => {
     }
 });
 
-
 app.put("/updateUser/:id", async (req, res) => {
     const id = Number(req.params.id);
     const query = { id: id };
     try {
         await client.connect();
         console.log("Update user: ", id);
-        //Data for updating user, from request body
         console.log(req.body);
         const { name, userName, password } = req.body;
         const updateUser = {
@@ -219,10 +194,8 @@ app.delete("/deleteUser/:id", async (req, res) => {
     const id = Number(req.params.id);
     const query = { id: id };
     try {
-        // Connect to the database
         await client.connect();
 
-        // Delete the user from 'userInfo' collection
         await userCollection.deleteOne(query);
         if (userDeleteResult.deletedCount === 0) {
             return res.status(404).json({ message: 'User not found' });
@@ -242,16 +215,13 @@ app.delete("/deleteUser/:id", async (req, res) => {
 app.get("/listTransactions/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Check if the user exists
         const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Get the user's transactions array
         const userTransactions = user.transactions || [];
 
         res.status(200).send(userTransactions);
@@ -264,29 +234,24 @@ app.get("/listTransactions/:userId", async (req, res) => {
 app.post("/createTransaction/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Extract transaction details from the request body
         const { amount, description, category, date } = req.body;
 
-        // Get the user document
         const user = await userCollection.findOne({ id: userId });
 
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
 
-        // Append the new transaction to the user's transactions array
         const updatedTransactions = user.transactions || [];
         updatedTransactions.push({
             amount: amount,
             description: description,
             category: category,
-            date: date // Use provided date
+            date: date
         });
 
-        // Update the user document with the updated transactions array
         await userCollection.updateOne({ id: userId }, { $set: { transactions: updatedTransactions } });
 
         res.status(201).send({ message: "Transaction added successfully" });
@@ -296,32 +261,26 @@ app.post("/createTransaction/:userId", async (req, res) => {
     }
 });
 
-app.delete("/deleteTransaction/:userId/:transactionIndex", async (req, res) => {
+app.delete("/deleteTransaction/:userId/:transactionId", async (req, res) => {
     const userId = Number(req.params.userId);
-    const transactionIndex = Number(req.params.transactionIndex);
+    const transactionId = Number(req.params.transactionId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Get the user document
         const user = await userCollection.findOne({ id: userId });
 
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
 
-        // Get the user's transactions array
         const updatedTransactions = user.transactions || [];
 
-        // Check if the transaction index is valid
-        if (transactionIndex < 0 || transactionIndex >= updatedTransactions.length) {
-            return res.status(400).send({ message: 'Invalid transaction index' });
+        if (transactionId < 0 || transactionId >= updatedTransactions.length) {
+            return res.status(400).send({ message: 'Invalid id' });
         }
 
-        // Remove the transaction at the specified index
-        updatedTransactions.splice(transactionIndex, 1);
+        updatedTransactions.splice(transactionId, 1);
 
-        // Update the user document with the updated transactions array
         await userCollection.updateOne({ id: userId }, { $set: { transactions: updatedTransactions } });
 
         res.status(200).send({ message: "Transaction deleted successfully" });
@@ -345,13 +304,11 @@ app.get("/listBudget/:userId", async (req, res) => {
 
         console.log("Node connected successfully to MongoDB");
 
-        // Check if the user exists
         const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Extract budget details from user object
         const { budget } = user;
 
         res.status(200).json(budget);
@@ -374,17 +331,14 @@ app.put("/changeBudget/:userId", async (req, res) => {
 
         console.log("Node connected successfully to MongoDB");
 
-        // Check if the user exists
         const user = await userCollection
             .findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Extract budget details from request body
         const { total, income, housing, utilities, food, transportation, personal, savings, other } = req.body;
 
-        // Define the update document for the budget
         const updateBudget = {
             $set: {
                 budget:{
@@ -401,7 +355,6 @@ app.put("/changeBudget/:userId", async (req, res) => {
             }
         }
 
-        // Update the budget for the user
         const result = await userCollection
             .updateOne(query, updateBudget);
 
@@ -417,16 +370,13 @@ app.put("/changeBudget/:userId", async (req, res) => {
 app.get("/getGoals/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Check if the user exists
         const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Get the user's goals array
         const userGoals = user.goals || [];
 
         res.status(200).send(userGoals);
@@ -436,30 +386,24 @@ app.get("/getGoals/:userId", async (req, res) => {
     }
 });
 
-// POST request to add a new goal
 app.post("/addGoal/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Extract goal details from the request body
         const { goal } = req.body;
 
-        // Get the user document
         const user = await userCollection.findOne({ id: userId });
 
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
 
-        // Append the new goal to the user's goals array
         const updatedGoals = user.goals || [];
         updatedGoals.push({
             goal: goal
         });
 
-        // Update the user document with the updated goals array
         await userCollection.updateOne({ id: userId }, { $set: { goals: updatedGoals } });
 
         res.status(201).send({ message: "Goal added successfully" });
@@ -469,32 +413,25 @@ app.post("/addGoal/:userId", async (req, res) => {
     }
 });
 
-// DELETE request to delete a goal
 app.delete("/deleteGoal/:userId/:goalId", async (req, res) => {
     const userId = Number(req.params.userId);
     const goalId = Number(req.params.goalId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Get the user document
         const user = await userCollection.findOne({ id: userId });
 
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
 
-        // Get the user's goals array
         const updatedGoals = user.goals || [];
 
         if (goalId < 0 || goalId >= updatedGoals.length) {
-            return res.status(400).send({ message: 'Invalid goal index' });
+            return res.status(400).send({ message: 'Invalid id' });
         }
 
-        // Filter out the goal with the specified goalId
         updatedGoals.splice(goalId, 1);
-
-        // Update the user document with the filtered goals array
         await userCollection.updateOne({ id: userId }, { $set: { goals: updatedGoals } });
 
         res.status(200).send({ message: "Goal deleted successfully" });
@@ -508,30 +445,25 @@ app.delete("/deleteGoal/:userId/:goalId", async (req, res) => {
 //INCOME----------------------------------------------------------------------------------------------------------------
 
 
-// GET request to fetch income
 app.get("/getIncome/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     try {
-        // Connect to the database
         await client.connect();
 
-        // Check if the user exists
         const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
 
-        // Get the user's income
         const userIncome = user.income || 0;
 
-        res.status(200).send(userIncome.toString()); // Convert to string to send as response
+        res.status(200).send(userIncome.toString());
     } catch (error) {
         console.error("Error fetching income:", error);
         res.status(500).send("Internal server error");
     }
 });
 
-// PUT request to update income
 app.put("/updateIncome/:userId", async (req, res) => {
     const userId = Number(req.params.userId);
     const query = { id: userId };
@@ -541,23 +473,18 @@ app.put("/updateIncome/:userId", async (req, res) => {
         console.log("Update user budget: ", userId);
         console.log("Node connected successfully to MongoDB");
 
-        // Check if the user exists
         const user = await userCollection.findOne({ id: userId });
         if (!user) {
             return res.status(404).send("User not found");
         }
-
-        // Extract the income from the request body
         const { income } = req.body;
 
-        // Define the update document for the budget
         const updateBudget = {
             $set: {
                 "budget.income": income !== undefined ? income : user.budget.income
             }
         };
 
-        // Update the budget for the user
         const result = await userCollection.updateOne(query, updateBudget);
 
         res.send("Budget updated successfully").status(200);

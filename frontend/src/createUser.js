@@ -8,7 +8,7 @@ const CreateUser = ({ handleSwitchView }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [message, setMessage] = useState('');
 
   const handleInputChange = (e) => {
     setUserFormData({ ...userFormData, [e.target.name]: e.target.value });
@@ -18,10 +18,9 @@ const CreateUser = ({ handleSwitchView }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccessMessage('');
+    setMessage('');
 
     try {
-      // Check if the username already exists
       const checkResponse = await fetch('http://127.0.0.1:8081/checkUser', {
         method: 'POST',
         headers: {
@@ -42,7 +41,6 @@ const CreateUser = ({ handleSwitchView }) => {
         return;
       }
 
-      // If the username doesn't exist, proceed with user creation
       const response = await fetch('http://127.0.0.1:8081/createUser', {
         method: 'POST',
         headers: {
@@ -55,14 +53,13 @@ const CreateUser = ({ handleSwitchView }) => {
         throw new Error('User creation failed');
       }
 
-      // User created successfully
       setLoading(false);
       setUserFormData({
         name: "",
         userName: "",
         password: ""
       });
-      setSuccessMessage('User created successfully!');
+      setMessage('User created successfully!');
     } catch (error) {
       console.error('Error creating user:', error);
       setError('An error occurred while creating the user.');
@@ -89,7 +86,7 @@ const CreateUser = ({ handleSwitchView }) => {
           </div>
           <button type="submit" className="btn btn-success" disabled={loading}>Create User</button>
           {error && <p>{error}</p>}
-          {successMessage && <p>{successMessage}</p>}
+          {message && <p>{message}</p>}
         </form>
         <div className="d-flex justify-content-between mt-3">
           <button className="btn btn-outline-success" onClick={() => handleSwitchView('login')}>Back to Login</button>

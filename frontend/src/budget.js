@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from './userContext'; // Import the useUser hook
+import { useUser } from './userContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 
 const BudgetingPage = ({ onSwitchView }) => {
-    const { userId } = useUser(); // Access the userId from the context
+    const { userId } = useUser();
     const [budget, setBudget] = useState({
         total: 0,
         income: 0,
@@ -18,30 +18,28 @@ const BudgetingPage = ({ onSwitchView }) => {
         other: 0
     });
     const [message, setMessage] = useState('');
-    const [oldBudget, setOldBudget] = useState(null);
     const [tempIncome, setTempIncome] = useState('');
-    // Calculate total dynamically based on other fields
-    function calculateTotal(){
+
+    function calculateTotal() {
         const total = Object.values(budget)
-            .filter((key) => key !== budget.total && key !== budget.income) // Exclude 'total' and 'income'
-            .reduce((amount, value) => amount + parseFloat(value), 0); // Initial value set to 0
+            .filter((key) => key !== budget.total && key !== budget.income)
+            .reduce((amount, value) => amount + parseFloat(value), 0);
         return total;
     };
-    
+
     const calculateRemainingBalance = () => {
         const expenses = Object.values(budget)
-        .filter((key) => key !== budget.total && key !== budget.income)
-        .reduce((total, value) => total + parseFloat(value), 0);
+            .filter((key) => key !== budget.total && key !== budget.income)
+            .reduce((total, value) => total + parseFloat(value), 0);
         return budget.income - expenses;
     };
 
     useEffect(() => {
-        // Fetch budget data on component mount and when userId changes
         fetchBudget();
     }, [userId]);
 
 
-    
+
     const fetchBudget = async () => {
         try {
             const response = await fetch(`http://127.0.0.1:8081/listBudget/${userId}`);
@@ -52,11 +50,11 @@ const BudgetingPage = ({ onSwitchView }) => {
                 setOldBudget(budgetData);
                 setTempIncome(budgetData.income);
             } else {
-                setMessage('Error fetching budget data. Please try again later.');
+                setMessage('Error fetching budget ');
             }
         } catch (error) {
-            console.error('Error fetching budget data:', error);
-            setMessage('An error occurred. Please try again later.');
+            console.error('Error fetching budget:', error);
+            setMessage('An error occurred');
         }
     };
 
@@ -65,7 +63,6 @@ const BudgetingPage = ({ onSwitchView }) => {
             var total = calculateTotal();
             total = 0;
             setTempIncome(calculateRemainingBalance());
-            //const updatedBudget = { ...budget, total};
             const response = await fetch(`http://127.0.0.1:8081/changeBudget/${userId}`, {
                 method: 'PUT',
                 headers: {
@@ -76,20 +73,19 @@ const BudgetingPage = ({ onSwitchView }) => {
             if (response.ok) {
                 setMessage('Budget updated successfully!');
             } else {
-                setMessage('Error updating budget. Please try again later.');
+                setMessage('Error updating budget');
             }
         } catch (error) {
             console.error('Error updating budget:', error);
-            setMessage('An error occurred. Please try again later.');
+            setMessage('An error occurred.');
         }
     };
 
-    // Handler function to update budget state
     const handleBudgetChange = (e) => {
         const { name, value } = e.target;
         setBudget(prevBudget => ({
             ...prevBudget,
-            [name]: parseFloat(value) || 0 // Ensure value is a number
+            [name]: parseFloat(value) || 0
         }));
     };
 
@@ -100,7 +96,7 @@ const BudgetingPage = ({ onSwitchView }) => {
                 <div className="col-md-6">
                     <h3>Current Budget</h3>
                     <form>
-                    <div className="form-group">
+                        <div className="form-group">
                             <label>Income:</label>
                             <input
                                 type="text"
@@ -200,8 +196,5 @@ const BudgetingPage = ({ onSwitchView }) => {
         </div>
     );
 };
-
-
-
 
 export default BudgetingPage;

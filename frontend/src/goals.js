@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from './userContext'; // Import the useUser hook
+import { useUser } from './userContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const GoalsPage = ({ onSwitchView }) => {
-    const { userId } = useUser(); // Access the userId from the context
+    const { userId } = useUser();
     const [goals, setGoals] = useState([]);
     const [newGoal, setNewGoal] = useState('');
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        // Fetch goals data on component mount and when userId changes
         fetchGoals();
     }, [userId]);
 
@@ -61,13 +60,10 @@ const GoalsPage = ({ onSwitchView }) => {
             const response = await fetch(`http://127.0.0.1:8081/deleteGoal/${userId}/${goalId}`, {
                 method: 'DELETE',
             });
-    
-            // Log response for debugging
-            console.log('Delete Goal Response:', response);
-    
+
             if (response.ok) {
                 setMessage('Goal deleted successfully!');
-                fetchGoals(); // Assuming fetchGoals is a function to fetch updated goals
+                fetchGoals();
             } else {
                 setMessage('Error deleting goal. Please try again later.');
             }
@@ -76,7 +72,7 @@ const GoalsPage = ({ onSwitchView }) => {
             setMessage('An error occurred. Please try again later.');
         }
     };
-    
+
 
     return (
         <div className="container">
@@ -102,7 +98,7 @@ const GoalsPage = ({ onSwitchView }) => {
                         {goals.map((goal) => (
                             <li key={goal._id} className="list-group-item" style={{ backgroundColor: '#dcedc8' }}>
                                 {goal.goal}
-                                <br/><br/> <button className="btn btn-danger" onClick={() => handleDeleteGoal(goal._id)}>Delete</button>
+                                <br /><br /> <button className="btn btn-danger" onClick={() => handleDeleteGoal(goal._id)}>Delete</button>
                             </li>
                         ))}
                     </ul>

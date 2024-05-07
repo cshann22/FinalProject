@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useUser } from './userContext'; // Import the useUser hook
+import { useUser } from './userContext'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 const AccountSettings = ({ onSwitchView }) => {
-  const { userId } = useUser(); // Access the userId from the context
+  const { userId } = useUser(); 
   const [name, setName] = useState('');
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +21,11 @@ const AccountSettings = ({ onSwitchView }) => {
       if (response.ok) {
         setMessage('Account updated successfully!');
       } else {
-        setMessage('Error updating account. Please try again later.');
+        setMessage('Error updating account');
       }
     } catch (error) {
       console.error('Error updating account:', error);
-      setMessage('An error occurred. Please try again later.');
+      setMessage('An error occurred');
     }
   };
 

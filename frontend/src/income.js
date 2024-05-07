@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from './userContext'; // Import the useUser hook
+import { useUser } from './userContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const IncomePage = ({ onSwitchView }) => {
-    const { userId } = useUser(); // Access the userId from the context
+    const { userId } = useUser();
     const [income, setIncome] = useState(0);
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        // Fetch income data on component mount and when userId changes
         fetchIncome();
     }, [userId]);
 
@@ -20,11 +19,11 @@ const IncomePage = ({ onSwitchView }) => {
                 console.log("Income data:", incomeData);
                 setIncome(incomeData);
             } else {
-                setMessage('Error fetching income data. Please try again later.');
+                setMessage('Error fetching income data.');
             }
         } catch (error) {
             console.error('Error fetching income data:', error);
-            setMessage('An error occurred. Please try again later.');
+            setMessage('An error occurred.');
         }
     };
 
@@ -40,11 +39,11 @@ const IncomePage = ({ onSwitchView }) => {
             if (response.ok) {
                 setMessage('Income updated successfully!');
             } else {
-                setMessage('Error updating income. Please try again later.');
+                setMessage('Error updating income.');
             }
         } catch (error) {
             console.error('Error updating income:', error);
-            setMessage('An error occurred. Please try again later.');
+            setMessage('An error occurred.');
         }
     };
 

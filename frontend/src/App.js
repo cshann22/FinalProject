@@ -3,15 +3,15 @@ import React, { useState } from 'react';
 import Login from './login';
 import CreateUser from './createUser';
 import Dashboard from './dashboard';
-import AccountSettings from './accountSettings'; // Import AccountSettings component
-import Transactions from './transactions'; // Import Transactions component
-import BudgetingPage from './budget'; // Import BudgetingPage component
+import AccountSettings from './accountSettings';
+import Transactions from './transactions';
+import BudgetingPage from './budget';
 import IncomePage from './income';
 import GoalsPage from './goals';
-import { UserProvider } from './userContext'; // Import the UserProvider
+import { UserProvider } from './userContext';
 
 const App = () => {
-  const [view, setView] = useState('login'); // State to track which view to display
+  const [view, setView] = useState('login');
 
   const handleSwitchView = (newView) => {
     setView(newView);
@@ -31,7 +31,6 @@ const App = () => {
           </div>
         )}
 
-        {/* Render Dashboard or AccountSettings based on the view */}
         {view === 'dashboard' && (
           <Dashboard onSwitchView={handleSwitchView} />
         )}

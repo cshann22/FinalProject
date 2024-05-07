@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useUser } from './userContext'; // Import the useUser hook
+import { useUser } from './userContext';
 
 const Login = ({ onLogin, handleSwitchView }) => {
-  const { setUserData } = useUser(); // Access the setUserData function from the context
+  const { setUserData } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,11 +30,10 @@ const Login = ({ onLogin, handleSwitchView }) => {
 
     if (response.ok) {
       const data = await response.json();
-      setUserData(data.user.id); // Set the user ID in the context
+      setUserData(data.user.id);
       setLoading(false);
-      onLogin(); // Notify parent component about successful login
+      onLogin();
     } else {
-      // Login failed
       console.error('Error logging in:', response.statusText);
       setError('Invalid username or password.');
       setLoading(false);
